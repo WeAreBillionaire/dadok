@@ -1,52 +1,71 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const [step, setStep] = useState(0);
+
+  const pages = [
+    {
+      icon: '📖',
+      title: '다독',
+      description: '어려운 공문서를\n쉽게 읽어드립니다',
+    },
+    {
+      icon: '📁',
+      title: '로컬 파일 읽기',
+      description: '저장된 문서 파일을\n불러와서 확인하세요',
+    },
+    {
+      icon: '📷',
+      title: '카메라로 촬영',
+      description: '카메라로 바로 찍어서\n즉시 분석하세요',
+    },
+    {
+      icon: '🖼️',
+      title: '앨범에서 선택',
+      description: '갤러리에 있는 사진을\n선택해서 확인하세요',
+    },
+  ];
+
+  const handleNext = () => {
+    if (step < pages.length - 1) {
+      setStep(step + 1);
+    } else {
+      router.push('/(tabs)');
+    }
+  };
 
   return (
-    <ScrollView style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container} 
+      activeOpacity={1}
+      onPress={handleNext}
+    >
       <View style={styles.content}>
-        <Text style={styles.title}>어려운 공문서,{'\n'}쉽게 읽어드립니다</Text>
-        <Text style={styles.description}>
-          복잡한 공문서를 사진으로 찍으면{'\n'}
-          쉬운 말로 설명해드립니다
-        </Text>
-
-        <View style={styles.featuresContainer}>
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📁</Text>
-            <Text style={styles.featureTitle}>로컬 파일 읽기</Text>
-            <Text style={styles.featureDesc}>
-              저장된 문서 파일을{'\n'}불러와서 확인하세요
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📷</Text>
-            <Text style={styles.featureTitle}>카메라로 촬영</Text>
-            <Text style={styles.featureDesc}>
-              카메라로 바로 찍어서{'\n'}즉시 분석하세요
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>🖼️</Text>
-            <Text style={styles.featureTitle}>앨범에서 선택</Text>
-            <Text style={styles.featureDesc}>
-              갤러리에 있는 사진을{'\n'}선택해서 확인하세요
-            </Text>
-          </View>
-        </View>
+        <Text style={styles.icon}>{pages[step].icon}</Text>
+        <Text style={styles.title}>{pages[step].title}</Text>
+        <Text style={styles.description}>{pages[step].description}</Text>
       </View>
 
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => router.push('/(tabs)')}
-      >
-        <Text style={styles.buttonText}>시작하기</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <View style={styles.footer}>
+        <View style={styles.indicators}>
+          {pages.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.indicator,
+                index === step && styles.indicatorActive,
+              ]}
+            />
+          ))}
+        </View>
+        <Text style={styles.tapHint}>
+          {step < pages.length - 1 ? '화면을 탭하세요' : '시작하기'}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -56,57 +75,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   content: {
-    padding: 24,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  icon: {
+    fontSize: 80,
+    marginBottom: 32,
   },
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 16,
-    lineHeight: 42,
-    marginTop: 40,
+    marginBottom: 24,
+    textAlign: 'center',
   },
   description: {
-    fontSize: 18,
-    color: '#666',
-    lineHeight: 28,
-    marginBottom: 40,
-  },
-  featuresContainer: {
-    gap: 16,
-  },
-  featureCard: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-  },
-  featureIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  featureTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 8,
-  },
-  featureDesc: {
-    fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 32,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
+  footer: {
+    paddingBottom: 60,
     alignItems: 'center',
-    margin: 24,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  indicators: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E0E0E0',
+  },
+  indicatorActive: {
+    backgroundColor: '#007AFF',
+    width: 24,
+  },
+  tapHint: {
+    fontSize: 16,
+    color: '#999',
   },
 });
