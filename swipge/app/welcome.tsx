@@ -33,7 +33,7 @@ export default function WelcomeScreen() {
     if (step < pages.length - 1) {
       setStep(step + 1);
     } else {
-      router.push('/(tabs)');
+      router.push('/');
     }
   };
 
