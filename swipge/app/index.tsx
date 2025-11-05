@@ -1,9 +1,27 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
+import { analyzeDocument } from './utils/api';
 
 export default function HomeScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const handleAnalyze = async (imageUri: string) => {
+    console.log('Sending image:', imageUri);
+    try {
+      setLoading(true);
+      const response = await analyzeDocument(imageUri);
+      setResult(response);
+      Alert.alert('완료', '분석이 완료되었습니다');
+    } catch (error) {
+      Alert.alert('오류', '분석에 실패했습니다');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pickFromGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -13,8 +31,9 @@ export default function HomeScreen() {
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-      Alert.alert('선택됨', '이미지를 선택했습니다');
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+      await handleAnalyze(uri);  // 분석 실행
     }
   };
 
@@ -32,22 +51,29 @@ export default function HomeScreen() {
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-      Alert.alert('촬영됨', '사진을 촬영했습니다');
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+      await handleAnalyze(uri);  // 분석 실행
     }
   };
 
   const pickDocument = async () => {
-    // 파일 선택 (나중에 구현)
     Alert.alert('준비중', '파일 선택 기능 준비중입니다');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.emptyText}>
-          {selectedImage ? '이미지 선택됨' : '문서를 추가해보세요'}
-        </Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#007AFF" />
+        ) : result ? (
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultTitle}>분석 결과:</Text>
+            <Text style={styles.resultText}>{result.simplified}</Text>
+          </View>
+        ) : (
+          <Text style={styles.emptyText}>문서를 추가해보세요</Text>
+        )}
       </View>
 
       <View style={styles.footer}>
@@ -79,10 +105,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 24,
   },
   emptyText: {
     fontSize: 18,
     color: '#999',
+  },
+  resultContainer: {
+    width: '100%',
+  },
+  resultTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  resultText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
   },
   footer: {
     flexDirection: 'row',

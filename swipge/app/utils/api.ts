@@ -1,21 +1,25 @@
-import axios from 'axios';
+import { Platform } from 'react-native';
 
-const API_URL = 'http://your-server-ip:8000'; // 백엔드 서버 주소로 변경
+const API_URL = 'http://192.168.45.48:8000'; // 실제 IP로 변경
 
 export const analyzeDocument = async (imageUri: string) => {
   const formData = new FormData();
   
   formData.append('file', {
-    uri: imageUri,
+    uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
     type: 'image/jpeg',
     name: 'document.jpg',
   } as any);
 
-  const response = await axios.post(`${API_URL}/api/analyze`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+  const response = await fetch(`${API_URL}/api/analyze`, {
+    method: 'POST',
+    body: formData,
   });
 
-  return response.data;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error);
+  }
+
+  return await response.json();
 };
