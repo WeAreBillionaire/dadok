@@ -22,8 +22,6 @@ app.add_middleware(
 
 # Gemini 설정
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-for m in genai.list_models():
-    print(m.name)
 model = genai.GenerativeModel('gemini-2.5-pro')
 
 @app.get("/")
