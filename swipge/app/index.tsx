@@ -2,11 +2,29 @@ import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIn
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { analyzeDocument } from './utils/api';
+import * as Speech from 'expo-speech';
 
 export default function HomeScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const speakText = async () => {
+  if (isSpeaking) {
+    Speech.stop();
+    setIsSpeaking(false);
+  } else {
+    setIsSpeaking(true);
+    Speech.speak(result.simplified, {
+      language: 'ko-KR',
+      pitch: 1.0,
+      rate: 0.8, // 천천히 읽기
+      onDone: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+    });
+  }
+};
 
   const handleAnalyze = async (imageUri: string) => {
     console.log('Sending image:', imageUri);
@@ -74,8 +92,21 @@ export default function HomeScreen() {
     </View>
     
     <TouchableOpacity 
+      style={styles.speakButton}
+      onPress={speakText}
+    >
+      <Text style={styles.speakButtonText}>
+        {isSpeaking ? '🔊 정지' : '🔊 읽어주기'}
+      </Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity 
       style={styles.newButton}
-      onPress={() => setResult(null)}
+      onPress={() => {
+        Speech.stop();
+        setResult(null);
+        setIsSpeaking(false);
+      }}
     >
       <Text style={styles.newButtonText}>새 문서 분석</Text>
     </TouchableOpacity>
@@ -106,6 +137,18 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+    speakButton: {
+    backgroundColor: '#34C759',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  speakButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
