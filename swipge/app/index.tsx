@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { analyzeDocument } from './utils/api';
@@ -67,13 +67,22 @@ export default function HomeScreen() {
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : result ? (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>분석 결과:</Text>
-            <Text style={styles.resultText}>{result.simplified}</Text>
-          </View>
-        ) : (
-          <Text style={styles.emptyText}>문서를 추가해보세요</Text>
-        )}
+  <ScrollView style={styles.resultContainer}>
+    <Text style={styles.resultTitle}>📄 분석 결과</Text>
+    <View style={styles.resultBox}>
+      <Text style={styles.resultText}>{result.simplified}</Text>
+    </View>
+    
+    <TouchableOpacity 
+      style={styles.newButton}
+      onPress={() => setResult(null)}
+    >
+      <Text style={styles.newButtonText}>새 문서 분석</Text>
+    </TouchableOpacity>
+  </ScrollView>
+) : (
+  <Text style={styles.emptyText}>문서를 추가해보세요</Text>
+)}
       </View>
 
       <View style={styles.footer}>
@@ -112,12 +121,21 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   resultContainer: {
+    flex: 1,
     width: '100%',
+    padding: 24,
+  },
+  resultBox: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
   },
   resultTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 16,
+    color: '#000',
   },
   resultText: {
     fontSize: 16,
@@ -146,5 +164,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontWeight: '500',
+  },
+  newButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  newButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
