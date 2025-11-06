@@ -49,11 +49,15 @@ export default function RootLayout() {
           <>
             <Stack.Screen name="welcome" />
             <Stack.Screen name="index" />
+            <Stack.Screen name="history" />
+            <Stack.Screen name="detail" />
           </>
         ) : (
           <>
             <Stack.Screen name="index" />
             <Stack.Screen name="welcome" />
+            <Stack.Screen name="history" />
+            <Stack.Screen name="detail" />
           </>
         )}
       </Stack>

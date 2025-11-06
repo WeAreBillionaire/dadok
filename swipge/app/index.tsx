@@ -1,14 +1,17 @@
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { analyzeDocument } from './utils/api';
 import * as Speech from 'expo-speech';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const router = useRouter();
 
   const speakText = async () => {
   if (isSpeaking) {
@@ -27,11 +30,14 @@ export default function HomeScreen() {
 };
 
   const handleAnalyze = async (imageUri: string) => {
-    console.log('Sending image:', imageUri);
     try {
       setLoading(true);
       const response = await analyzeDocument(imageUri);
       setResult(response);
+      
+      // 히스토리 저장
+      await saveToHistory(response.simplified);
+      
       Alert.alert('완료', '분석이 완료되었습니다');
     } catch (error) {
       Alert.alert('오류', '분석에 실패했습니다');
@@ -39,6 +45,21 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const saveToHistory = async (text: string) => {
+  const historyItem = {
+    id: Date.now().toString(),
+    simplified: text,
+    timestamp: Date.now(),
+  };
+  
+  const existingData = await AsyncStorage.getItem('documentHistory');
+  const history = existingData ? JSON.parse(existingData) : [];
+  
+  // 최신순으로 추가 (최대 50개)
+  const newHistory = [historyItem, ...history].slice(0, 50);
+  await AsyncStorage.setItem('documentHistory', JSON.stringify(newHistory));
   };
 
   const pickFromGallery = async () => {
@@ -85,7 +106,10 @@ export default function HomeScreen() {
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : result ? (
-  <ScrollView style={styles.resultContainer}>
+  <ScrollView 
+    style={styles.resultContainer}
+    contentContainerStyle={styles.resultContent}
+  >
     <Text style={styles.resultTitle}>📄 분석 결과</Text>
     <View style={styles.resultBox}>
       <Text style={styles.resultText}>{result.simplified}</Text>
@@ -131,6 +155,13 @@ export default function HomeScreen() {
           <Text style={styles.actionIcon}>🖼️</Text>
           <Text style={styles.actionText}>앨범</Text>
         </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => router.push('/history')}>
+            <Text style={styles.actionIcon}>📋</Text>
+            <Text style={styles.actionText}>기록</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );

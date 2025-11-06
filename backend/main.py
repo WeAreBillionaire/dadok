@@ -52,7 +52,8 @@ async def analyze_document(file: UploadFile = File(...)):
 
 - 어려운 용어는 쉬운 말로 바꿔주세요
 - 핵심 내용을 간단명료하게 정리해주세요
-- 해야 할 일이 있다면 명확히 알려주세요"""
+- 해야 할 일이 있다면 명확히 알려주세요
+- 마크다운이 아닌 일반적인 텍스트 형태로 출력해"""
 
         response = model.generate_content(prompt)
         easy_text = response.text
